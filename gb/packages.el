@@ -1,4 +1,4 @@
 (setq gb-packages
- '(
-   go-mode)
- )
+      '(
+        go-mode)
+      )

@@ -1,35 +1,46 @@
 (setq go-post-extensions
       '(
-        ;; post extension gos go here
         go-gb
         ))
 
 (defun go/init-go-gb()
-  (defun gb//safe-project-root ()
-    "Return project's root, or nil if not in a project."
-    (and (fboundp 'projectile-project-root)
-         (projectile-project-p)
-         (projectile-project-root)))
 
-  (defun spacemacs/gb-run-tests (args)
-    ;; 到项目目录下执行gb命令
-    (interactive (list (file-name-as-directory
-                         (gb//safe-project-root))))
-    (save-selected-window
-      (async-shell-command (concat "cd " args "&& gb test -v"))))
+  ;; 运行命令
+  (defun gb/run-gb (&optional command args)
+    (let* ((where (gb/gb-project-root))
+           (args (if args args ""))
+           )
 
-  (defun spacemacs/gb-build (args)
-    (interactive (list (file-name-as-directory
-                         (gb//safe-project-root))))
-    (save-selected-window
-      (async-shell-command (concat "cd " args "&& gb build"))))
+    (if (not command)
+      (spacemacs-buffer/warning "abort: rub-gb command is required!"))
 
-  (spacemacs/declare-prefix-for-mode 'go-mode "md" "gb")
+    (if (not where)
+      (spacemacs-buffer/warning "abort: gb project not found!"))
+
+    ;; 进入项目根目录执行命令
+    (async-shell-command (concat "cd " where " && " (format "gb %s %s" command args)))))
+
+  ;; 测试
+  (defun gb/gb-run-tests ()
+    (interactive)
+    (gb/run-gb "test" "-v"))
+
+  ;; 构建
+  (defun gb/gb-build ()
+    (interactive)
+    (gb/run-gb "build"))
+
+  ;; Vendor
+  ;; Fetch
+  ;; Update
+  ;; Delete
+
+  (spacemacs/declare-prefix-for-mode 'go-mode "mb" "gb")
   (spacemacs/set-leader-keys-for-major-mode 'go-mode
-                                            "dt" 'spacemacs/gb-run-tests
-                                            "db" 'spacemacs/gb-build
+                                            "bt" 'gb/gb-run-tests
+                                            "bb" 'gb/gb-build
+                                            ;; "bf" 'gb/gb-vendor-fetch
+                                            ;; "bu" 'gb/gb-vendor-update
+                                            ;; "bd" 'gb/gb-vendor-delete
                                             )
   )
-
-
-
