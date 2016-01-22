@@ -10,7 +10,7 @@
     (let* ((where (gb/gb-project-root))
            (args (if args args ""))
            (url (if url url ""))
-           (current (if current current ""))
+           (current (if current current nil))
            )
 
       (if (not command)
@@ -21,17 +21,15 @@
 
       (if (not current)
         ;; 进入项目根目录执行命令
-        (async-shell-command (concat "cd " where " && " (format "gb %s %s %s" command args url))))
-
-      (if (current)
-        ;; 进入项目根目录执行命令
+        (async-shell-command (concat "cd " where " && " (format "gb %s %s %s" command args url)))
+        ;; 当前目录执行命令
         (async-shell-command (format "gb %s %s %s" command args url)))
-      )
+      ))
 
     ;; 测试
     (defun gb/gb-run-tests ()
       (interactive)
-      (gb/run-gb "test" "-v" "" "true"))
+      (gb/run-gb "test" "-v" "" t))
 
     ;; 测试整个项目
     (defun gb/gb-run-tests-project ()
