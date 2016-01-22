@@ -6,53 +6,66 @@
 (defun go/init-go-gb()
 
   ;; 运行命令
-  (defun gb/run-gb (&optional command args url)
+  (defun gb/run-gb (&optional command args url current)
     (let* ((where (gb/gb-project-root))
            (args (if args args ""))
            (url (if url url ""))
+           (current (if current current ""))
            )
 
-    (if (not command)
-      (spacemacs-buffer/warning "abort: rub-gb command is required!"))
+      (if (not command)
+        (spacemacs-buffer/warning "abort: gb command is required!"))
 
-    (if (not where)
-      (spacemacs-buffer/warning "abort: gb project not found!"))
+      (if (not where)
+        (spacemacs-buffer/warning "abort: gb project not found!"))
 
-    ;; 进入项目根目录执行命令
-    (async-shell-command (concat "cd " where " && " (format "gb %s %s %s" command args url)))))
+      (if (not current)
+        ;; 进入项目根目录执行命令
+        (async-shell-command (concat "cd " where " && " (format "gb %s %s %s" command args url))))
 
-  ;; 测试
-  (defun gb/gb-run-tests ()
-    (interactive)
-    (gb/run-gb "test" "-v"))
+      (if (current)
+        ;; 进入项目根目录执行命令
+        (async-shell-command (format "gb %s %s %s" command args url)))
+      )
 
-  ;; 构建
-  (defun gb/gb-build ()
-    (interactive)
-    (gb/run-gb "build"))
+    ;; 测试
+    (defun gb/gb-run-tests ()
+      (interactive)
+      (gb/run-gb "test" "-v" "" "true"))
 
-  ;; Vendor
-  ;; Fetch
-  (defun gb/gb-vendor-fetch (url)
-    (interactive (list (read-string "Fetch URL:")))
-    (gb/run-gb "vendor" "fetch" url))
+    ;; 测试整个项目
+    (defun gb/gb-run-tests-project ()
+      (interactive)
+      (gb/run-gb "test" "-v"))
 
-  ;; Update
-  (defun gb/gb-vendor-update (url)
-    (interactive (list (read-string "Package Name:")))
-    (gb/run-gb "vendor" "update" url))
+    ;; 构建
+    (defun gb/gb-build ()
+      (interactive)
+      (gb/run-gb "build"))
 
-  ;; Delete
-  (defun gb/gb-vendor-delete (url)
-    (interactive (list (read-string "Package Name:")))
-    (gb/run-gb "vendor" "delete" url))
+    ;; Vendor
+    ;; Fetch
+    (defun gb/gb-vendor-fetch (url)
+      (interactive (list (read-string "Fetch URL:")))
+      (gb/run-gb "vendor" "fetch" url))
 
-  (spacemacs/declare-prefix-for-mode 'go-mode "mb" "gb")
-  (spacemacs/set-leader-keys-for-major-mode 'go-mode
-                                            "bt" 'gb/gb-run-tests
-                                            "bb" 'gb/gb-build
-                                            "bf" 'gb/gb-vendor-fetch
-                                            "bu" 'gb/gb-vendor-update
-                                            "bd" 'gb/gb-vendor-delete
-                                            )
-  )
+    ;; Update
+    (defun gb/gb-vendor-update (url)
+      (interactive (list (read-string "Package Name:")))
+      (gb/run-gb "vendor" "update" url))
+
+    ;; Delete
+    (defun gb/gb-vendor-delete (url)
+      (interactive (list (read-string "Package Name:")))
+      (gb/run-gb "vendor" "delete" url))
+
+    (spacemacs/declare-prefix-for-mode 'go-mode "mb" "gb")
+    (spacemacs/set-leader-keys-for-major-mode 'go-mode
+                                              "bt" 'gb/gb-run-tests
+                                              "bp" 'gb/gb-run-tests-project
+                                              "bb" 'gb/gb-build
+                                              "bf" 'gb/gb-vendor-fetch
+                                              "bu" 'gb/gb-vendor-update
+                                              "bd" 'gb/gb-vendor-delete
+                                              )
+    )

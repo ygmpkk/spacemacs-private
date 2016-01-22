@@ -18,3 +18,6 @@
 (add-hook 'go-mode-hook
         (lambda()
           (setq tab-width 4)))
+
+;; Create Buffer 添加package
+(add-hook 'after-generate-new-buffer-name 'gb/add-header)
